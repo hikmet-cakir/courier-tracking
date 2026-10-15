@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: courier-tracking
+  datasource:
+    url: jdbc:postgresql://localhost:5432/courier
+    username: courier
+    password: courier
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+
+courier:
+  stores:
+    location: classpath:stores.json

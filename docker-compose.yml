@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: courier
+      POSTGRES_USER: courier
+      POSTGRES_PASSWORD: courier
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U courier -d courier"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/courier
+      SPRING_DATASOURCE_USERNAME: courier
+      SPRING_DATASOURCE_PASSWORD: courier
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
