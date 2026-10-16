@@ -1,6 +1,6 @@
 CREATE TABLE courier_location (
     id BIGSERIAL PRIMARY KEY,
-    courier_id VARCHAR NOT NULL,
+    courier_id VARCHAR(255) NOT NULL,
     recorded_at TIMESTAMPTZ NOT NULL,
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE courier_location (
 );
 
 CREATE TABLE courier_track (
-    courier_id VARCHAR PRIMARY KEY,
+    courier_id VARCHAR(255) PRIMARY KEY,
     last_latitude DOUBLE PRECISION,
     last_longitude DOUBLE PRECISION,
     last_recorded_at TIMESTAMPTZ,
@@ -18,8 +18,8 @@ CREATE TABLE courier_track (
 );
 
 CREATE TABLE geofence_state (
-    courier_id VARCHAR NOT NULL,
-    store_id VARCHAR NOT NULL,
+    courier_id VARCHAR(255) NOT NULL,
+    store_id VARCHAR(255) NOT NULL,
     inside BOOLEAN NOT NULL,
     last_entrance_at TIMESTAMPTZ,
     PRIMARY KEY (courier_id, store_id)
@@ -27,8 +27,8 @@ CREATE TABLE geofence_state (
 
 CREATE TABLE entrance_event (
     id BIGSERIAL PRIMARY KEY,
-    courier_id VARCHAR NOT NULL,
-    store_id VARCHAR NOT NULL,
+    courier_id VARCHAR(255) NOT NULL,
+    store_id VARCHAR(255) NOT NULL,
     occurred_at TIMESTAMPTZ NOT NULL,
     CONSTRAINT entrance_event_unique UNIQUE (courier_id, store_id, occurred_at)
 );
