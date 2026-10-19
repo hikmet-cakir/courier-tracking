@@ -10,7 +10,7 @@ Spring Boot service that ingests courier GPS points, accumulates each courier's 
 | Docker (Compose v2) | PostgreSQL, all-in-Docker run, and Testcontainers |
 | Maven Wrapper | Committed in the repo (`./mvnw` / `.\mvnw.cmd`) — no system Maven |
 | `curl` + `bash` | Optional: `scripts/smoke-test.sh` |
-| Postman (optional) | Import `postman/` and run the Walkthrough folder |
+| Postman (optional) | Import `postman/Courier-Tracking.postman_collection.json` only |
 
 Ports `8080` (API) and `5432` (PostgreSQL) must be free.
 
@@ -94,11 +94,11 @@ Uses a new courier id each run, so it is safe to repeat against the same databas
 
 ### Postman (easiest on Windows)
 
-1. Import `postman/Courier-Tracking.postman_collection.json`
-2. Import `postman/local.postman_environment.json` and select **Courier Tracking - Local** (top-right)
-3. Open the **Walkthrough** folder and send requests **top to bottom**
+1. Import **only** `postman/Courier-Tracking.postman_collection.json` (File → Import).
+2. Leave the environment dropdown as **No environment**. `baseUrl` and `courierId` are collection variables (`postman1` / `http://localhost:8080`).
+3. Send the 7 requests **top to bottom**.
 
-Expected HTTP status is in each request name (`201`, `200`, `409`, `404`, `400`). Change `courierId` in the environment if you already used `walk1`.
+To run the same flow again, change `courierId` (collection ⋯ → Edit → Variables), for example `postman2`.
 
 Alternatively open `http/courier-tracking.http` in VS Code / Cursor (REST Client) or IntelliJ and click **Send** on each request.
 

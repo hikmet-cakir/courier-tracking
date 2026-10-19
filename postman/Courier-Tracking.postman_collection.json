@@ -1,211 +1,93 @@
 {
   "info": {
-    "_postman_id": "c0ur1er-7rack-1ng-c011ect10n-0001",
+    "_postman_id": "c0ur1er-7rack-1ng-c011ect10n-0002",
     "name": "Courier Tracking API",
-    "description": "Manual checks for a running Courier Tracking API.\n\nImport this collection **and** `local.postman_environment.json`, then run the Walkthrough folder top to bottom.\n\nChange `courierId` in the environment if you already used `walk1` against the same database.",
+    "description": "Import **only this file**. Do not pick an Environment (leave it as No environment).\n\nVariables live on the collection (`baseUrl`, `courierId`). Send the 7 requests from top to bottom.\n\nTo run again, change `courierId` under the collection: **⋯ → Edit → Variables**.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080" }
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "courierId", "value": "postman1" }
   ],
   "item": [
     {
-      "name": "Walkthrough",
-      "description": "Send in order. Expected status is in each request name.",
-      "item": [
-        {
-          "name": "01 List stores — 200",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/v1/stores",
-            "description": "Five stores. `id` is a UUID derived from `name`, not the name itself."
-          }
+      "name": "1. List stores",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/stores",
+        "description": "200. Five stores; `id` is a UUID, not the name."
+      }
+    },
+    {
+      "name": "2. First location (inside Ataşehir)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:00Z\",\n  \"latitude\": 40.9923307,\n  \"longitude\": 29.1244229\n}"
         },
-        {
-          "name": "02 Unknown courier distance — 404",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/v1/couriers/{{courierId}}/distance",
-            "description": "No locations yet for this courier → ProblemDetail 404."
-          }
+        "url": "{{baseUrl}}/api/v1/locations",
+        "description": "201. applied=true, distance 0.00, one entrance event."
+      }
+    },
+    {
+      "name": "3. Same location again (duplicate)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:00Z\",\n  \"latitude\": 40.9923307,\n  \"longitude\": 29.1244229\n}"
         },
-        {
-          "name": "03 First point inside Ataşehir — 201",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:00Z\",\n  \"latitude\": {{storeLat}},\n  \"longitude\": {{storeLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations",
-            "description": "`applied=true`, `totalDistanceMeters=0.00`, one entrance event for Ataşehir."
-          }
+        "url": "{{baseUrl}}/api/v1/locations",
+        "description": "200. Idempotent retry."
+      }
+    },
+    {
+      "name": "4. Same timestamp, different coordinates (conflict)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:00Z\",\n  \"latitude\": 41.0,\n  \"longitude\": 29.0\n}"
         },
-        {
-          "name": "04 Distance after first point — 200",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/v1/couriers/{{courierId}}/distance"
-          }
+        "url": "{{baseUrl}}/api/v1/locations",
+        "description": "409."
+      }
+    },
+    {
+      "name": "5. Earlier timestamp (not applied)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:00:00Z\",\n  \"latitude\": 41.0,\n  \"longitude\": 29.0\n}"
         },
-        {
-          "name": "05 Entrance events — 200",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/v1/entrance-events?courierId={{courierId}}",
-            "description": "One event after step 03."
-          }
-        },
-        {
-          "name": "06 Still inside — 201, no new entrance",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:10Z\",\n  \"latitude\": {{storeLat}},\n  \"longitude\": {{storeLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations",
-            "description": "`entranceEvents` empty. Event list stays length 1."
-          }
-        },
-        {
-          "name": "07 Exact duplicate — 200",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:00Z\",\n  \"latitude\": {{storeLat}},\n  \"longitude\": {{storeLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations",
-            "description": "Same courier, timestamp, and coordinates as step 03."
-          }
-        },
-        {
-          "name": "08 Same timestamp different coords — 409",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:00Z\",\n  \"latitude\": {{farLat}},\n  \"longitude\": {{farLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations"
-          }
-        },
-        {
-          "name": "09 Leave the store — 201",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:20Z\",\n  \"latitude\": {{farLat}},\n  \"longitude\": {{farLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations",
-            "description": "Distance increases. No new entrance."
-          }
-        },
-        {
-          "name": "10 Re-enter before 60s — 201, no entrance",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:50Z\",\n  \"latitude\": {{storeLat}},\n  \"longitude\": {{storeLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations",
-            "description": "50s after the first entrance. Cooldown suppresses the event; distance still grows (round trip)."
-          }
-        },
-        {
-          "name": "11 Leave again — 201",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:55Z\",\n  \"latitude\": {{farLat}},\n  \"longitude\": {{farLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations"
-          }
-        },
-        {
-          "name": "12 Re-enter at 60s — 201, second entrance",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:02:00Z\",\n  \"latitude\": {{storeLat}},\n  \"longitude\": {{storeLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations"
-          }
-        },
-        {
-          "name": "13 Out-of-order timestamp — 201 applied=false",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2024-01-01T00:00:30Z\",\n  \"latitude\": {{farLat}},\n  \"longitude\": {{farLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations"
-          }
-        },
-        {
-          "name": "14 Future timestamp — 201",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{courierId}}\",\n  \"timestamp\": \"2099-01-01T00:00:00Z\",\n  \"latitude\": {{farLat}},\n  \"longitude\": {{farLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations"
-          }
-        },
-        {
-          "name": "15 Validation error — 400",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"\",\n  \"timestamp\": \"not-a-time\",\n  \"latitude\": 200,\n  \"longitude\": 29.0\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations"
-          }
-        },
-        {
-          "name": "16 Second courier independent — 201",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"courierId\": \"{{otherCourierId}}\",\n  \"timestamp\": \"2024-01-01T00:01:00Z\",\n  \"latitude\": {{storeLat}},\n  \"longitude\": {{storeLng}}\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/locations"
-          }
-        },
-        {
-          "name": "17 Filter events by courier and store — 200",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/v1/entrance-events?courierId={{courierId}}&storeId={{storeId}}"
-          }
-        }
-      ]
+        "url": "{{baseUrl}}/api/v1/locations",
+        "description": "201. applied=false. Distance unchanged."
+      }
+    },
+    {
+      "name": "6. Total distance",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/couriers/{{courierId}}/distance",
+        "description": "200 after request 2. 404 if you skip the POSTs."
+      }
+    },
+    {
+      "name": "7. Entrance events",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/entrance-events?courierId={{courierId}}",
+        "description": "200. One Ataşehir entrance."
+      }
     }
   ]
 }
