@@ -69,7 +69,7 @@ curl -s -D - http://localhost:8080/api/v1/couriers/c1/distance
 **Entrance events** (both query params optional; ordered by `occurredAt` ascending):
 
 ```bash
-curl -s "http://localhost:8080/api/v1/entrance-events?courierId=c1&storeId=Ata%C5%9Fehir%20MMM%20Migros"
+curl -s "http://localhost:8080/api/v1/entrance-events?courierId=c1&storeId=7149e322-5c08-3471-942d-311309121d39"
 ```
 
 **Stores** (loaded from `stores.json`):
@@ -126,7 +126,7 @@ Interpretations of the agreed business rules (the simplest option consistent wit
 
 **60 s boundary.** Exactly 60.000 seconds is enough to emit (`recorded_at >= last_entrance_at + 60s`). 59 seconds is not.
 
-Store identity: `stores.json` has no `id` field, so `store_id` is the store `name`. String columns are `VARCHAR(255)` so Hibernate `ddl-auto=validate` matches JPA defaults.
+Store identity: `stores.json` has no `id` field (only `name` / `lat` / `lng`). At load time a stable UUID v3 is derived from the store name (`UUID.nameUUIDFromBytes`), so `GET /api/v1/stores` and persisted `store_id` values are UUIDs without duplicating the name in the JSON. Renaming a store changes its identity. String columns are `VARCHAR(255)` so Hibernate `ddl-auto=validate` matches JPA defaults.
 
 ## How this would scale
 

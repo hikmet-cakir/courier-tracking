@@ -11,8 +11,10 @@ import com.example.courier.application.LocationIngestionResult;
 import com.example.courier.application.LocationIngestionService;
 import com.example.courier.domain.model.EntranceEvent;
 import com.example.courier.domain.model.Location;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,6 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class LocationControllerTest {
 
     private static final Instant T0 = Instant.parse("2024-01-01T00:00:00Z");
+    private static final String ATASEHIR_ID =
+            UUID.nameUUIDFromBytes("Ataşehir MMM Migros".getBytes(StandardCharsets.UTF_8)).toString();
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,7 +42,7 @@ class LocationControllerTest {
                         false,
                         true,
                         12.345,
-                        List.of(new EntranceEvent("c1", "Ataşehir MMM Migros", T0))));
+                        List.of(new EntranceEvent("c1", ATASEHIR_ID, T0))));
 
         mockMvc.perform(post("/api/v1/locations")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -49,7 +53,7 @@ class LocationControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.applied").value(true))
                 .andExpect(jsonPath("$.totalDistanceMeters").value(12.35))
-                .andExpect(jsonPath("$.entranceEvents[0].storeId").value("Ataşehir MMM Migros"))
+                .andExpect(jsonPath("$.entranceEvents[0].storeId").value(ATASEHIR_ID))
                 .andExpect(jsonPath("$.entranceEvents[0].occurredAt").value("2024-01-01T00:00:00Z"));
     }
 

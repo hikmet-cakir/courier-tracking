@@ -6,10 +6,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
@@ -73,7 +75,7 @@ public final class JsonStoreCatalog implements StoreCatalog {
             }
             Store store;
             try {
-                store = new Store(entry.name(), entry.name(), entry.lat(), entry.lng());
+                store = new Store(idFromName(entry.name()), entry.name(), entry.lat(), entry.lng());
             } catch (IllegalArgumentException ex) {
                 throw new IllegalStateException(
                         "Invalid store at index " + i + " in " + location + ": " + ex.getMessage(), ex);
@@ -84,6 +86,10 @@ public final class JsonStoreCatalog implements StoreCatalog {
             parsed.add(store);
         }
         return parsed;
+    }
+
+    private static String idFromName(String name) {
+        return UUID.nameUUIDFromBytes(name.getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     private record StoreFileEntry(String name, Double lat, Double lng) {}

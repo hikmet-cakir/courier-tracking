@@ -14,8 +14,10 @@ import com.example.courier.domain.port.CourierLocationRepository;
 import com.example.courier.domain.port.CourierTrackRepository;
 import com.example.courier.domain.port.EntranceEventRepository;
 import com.example.courier.domain.port.GeofenceStateRepository;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +27,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 class PersistenceIT extends AbstractPostgresIT {
 
     private static final Instant T0 = Instant.parse("2024-06-01T10:00:00Z");
-    private static final String STORE_A = "Ataşehir MMM Migros";
-    private static final String STORE_B = "Novada MMM Migros";
+    private static final String STORE_A =
+            UUID.nameUUIDFromBytes("Ataşehir MMM Migros".getBytes(StandardCharsets.UTF_8)).toString();
+    private static final String STORE_B =
+            UUID.nameUUIDFromBytes("Novada MMM Migros".getBytes(StandardCharsets.UTF_8)).toString();
 
     @Autowired
     private CourierTrackRepository courierTracks;

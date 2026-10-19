@@ -9,7 +9,9 @@ import com.example.courier.domain.port.CourierLocationRepository;
 import com.example.courier.domain.port.CourierTrackRepository;
 import com.example.courier.domain.port.EntranceEventRepository;
 import com.example.courier.domain.port.GeofenceStateRepository;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,8 @@ class LocationIngestionIT extends AbstractPostgresIT {
 
     private static final Instant T0 = Instant.parse("2024-06-01T10:00:00Z");
     private static final Instant T1 = Instant.parse("2024-06-01T10:01:00Z");
-    private static final String ATASEHIR = "Ataşehir MMM Migros";
+    private static final String ATASEHIR =
+            UUID.nameUUIDFromBytes("Ataşehir MMM Migros".getBytes(StandardCharsets.UTF_8)).toString();
     private static final double ATASEHIR_LAT = 40.9923307;
     private static final double ATASEHIR_LNG = 29.1244229;
 
