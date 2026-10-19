@@ -20,7 +20,7 @@ cd courier-tracking
 chmod +x mvnw    # macOS/Linux, once
 ```
 
-On Windows use `.\mvnw.cmd`. No extra config is required locally: `application.yml` matches `docker-compose.yml` (`courier` / `courier` / database `courier`).
+No extra config is required locally: `application.yml` matches `docker-compose.yml` (`courier` / `courier` / database `courier`).
 
 | Property | Environment variable | Default |
 |----------|----------------------|---------|
@@ -33,14 +33,16 @@ Schema is created by Flyway (`V1__init.sql`); Hibernate only validates it. Store
 
 ## How to run
 
-**Option A — Postgres in Docker, app on the host**
+**Option A — Postgres in Docker, app on the host** (needs JDK 21)
 
 ```bash
 docker compose up -d postgres
-./mvnw spring-boot:run
+./mvnw spring-boot:run          # Windows: .\mvnw.cmd spring-boot:run
 ```
 
-**Option B — everything in Docker**
+`.\mvnw.cmd` alone is not enough; it must be followed by a goal (`spring-boot:run`, `test`, …).
+
+**Option B — everything in Docker** (no host Maven / JDK)
 
 ```bash
 docker compose up --build
@@ -70,6 +72,8 @@ Stop the host app (Option A) with `Ctrl+C`.
 ./mvnw test -Dtest='*Test'           # unit and @WebMvcTest only (no Docker)
 ./mvnw clean verify                  # clean build + all tests
 ```
+
+Windows: `.\mvnw.cmd test` / `.\mvnw.cmd clean verify`.
 
 `./mvnw test` does **not** need Compose or a running app. Integration tests start their own PostgreSQL 16 via Testcontainers. Expected: `BUILD SUCCESS`.
 
