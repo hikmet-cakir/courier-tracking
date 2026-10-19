@@ -3,7 +3,8 @@ WORKDIR /workspace
 COPY mvnw pom.xml ./
 COPY .mvn .mvn
 COPY src src
-RUN chmod +x mvnw && ./mvnw -B -DskipTests package
+# Strip CR so a Windows checkout (CRLF) still runs on Alpine (exit 127 = /bin/sh\r).
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw && ./mvnw -B -DskipTests package
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
