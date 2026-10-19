@@ -1,0 +1,158 @@
+@baseUrl = http://localhost:8080
+@courierId = walk1
+@otherCourierId = walk2
+@storeId = 7149e322-5c08-3471-942d-311309121d39
+@storeLat = 40.9923307
+@storeLng = 29.1244229
+@farLat = 41.0
+@farLng = 29.0
+
+# Run top to bottom against a running API.
+# Change @courierId if you already sent walk1.
+
+### 1. List stores — 200, id is UUID not the name
+GET {{baseUrl}}/api/v1/stores
+
+### 2. Unknown courier — 404
+GET {{baseUrl}}/api/v1/couriers/{{courierId}}/distance
+
+### 3. First point inside Ataşehir — 201, applied=true, one entrance
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:01:00Z",
+  "latitude": {{storeLat}},
+  "longitude": {{storeLng}}
+}
+
+### 4. Distance after first point — 200, 0.00
+GET {{baseUrl}}/api/v1/couriers/{{courierId}}/distance
+
+### 5. Entrance events — 200, one event
+GET {{baseUrl}}/api/v1/entrance-events?courierId={{courierId}}
+
+### 6. Still inside — 201, no new entrance
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:01:10Z",
+  "latitude": {{storeLat}},
+  "longitude": {{storeLng}}
+}
+
+### 7. Exact duplicate — 200
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:01:00Z",
+  "latitude": {{storeLat}},
+  "longitude": {{storeLng}}
+}
+
+### 8. Same timestamp, different coordinates — 409
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:01:00Z",
+  "latitude": {{farLat}},
+  "longitude": {{farLng}}
+}
+
+### 9. Leave the store — 201, distance increases, no entrance
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:01:20Z",
+  "latitude": {{farLat}},
+  "longitude": {{farLng}}
+}
+
+### 10. Re-enter before 60s — 201, entranceEvents empty
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:01:50Z",
+  "latitude": {{storeLat}},
+  "longitude": {{storeLng}}
+}
+
+### 11. Leave again
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:01:55Z",
+  "latitude": {{farLat}},
+  "longitude": {{farLng}}
+}
+
+### 12. Re-enter at 60s — 201, second entrance
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:02:00Z",
+  "latitude": {{storeLat}},
+  "longitude": {{storeLng}}
+}
+
+### 13. Out-of-order timestamp — 201, applied=false
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2024-01-01T00:00:30Z",
+  "latitude": {{farLat}},
+  "longitude": {{farLng}}
+}
+
+### 14. Future timestamp — 201
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}",
+  "timestamp": "2099-01-01T00:00:00Z",
+  "latitude": {{farLat}},
+  "longitude": {{farLng}}
+}
+
+### 15. Validation error — 400
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "",
+  "timestamp": "not-a-time",
+  "latitude": 200,
+  "longitude": 29.0
+}
+
+### 16. Second courier independent — 201, one entrance
+POST {{baseUrl}}/api/v1/locations
+Content-Type: application/json
+
+{
+  "courierId": "{{otherCourierId}}",
+  "timestamp": "2024-01-01T00:01:00Z",
+  "latitude": {{storeLat}},
+  "longitude": {{storeLng}}
+}
+
+### 17. Filter events by courier and store
+GET {{baseUrl}}/api/v1/entrance-events?courierId={{courierId}}&storeId={{storeId}}

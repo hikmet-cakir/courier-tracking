@@ -10,6 +10,7 @@ Spring Boot service that ingests courier GPS points, accumulates each courier's 
 | Docker (Compose v2) | PostgreSQL, all-in-Docker run, and Testcontainers |
 | Maven Wrapper | Committed in the repo (`./mvnw` / `.\mvnw.cmd`) — no system Maven |
 | `curl` + `bash` | Optional: `scripts/smoke-test.sh` |
+| Postman (optional) | Import `postman/` and run the Walkthrough folder |
 
 Ports `8080` (API) and `5432` (PostgreSQL) must be free.
 
@@ -87,7 +88,17 @@ bash scripts/smoke-test.sh http://host:port
 
 Uses a new courier id each run, so it is safe to repeat against the same database. On Windows run it from Git Bash or WSL.
 
-### Manual requests
+### Postman (easiest on Windows)
+
+1. Import `postman/Courier-Tracking.postman_collection.json`
+2. Import `postman/local.postman_environment.json` and select **Courier Tracking - Local** (top-right)
+3. Open the **Walkthrough** folder and send requests **top to bottom**
+
+Expected HTTP status is in each request name (`201`, `200`, `409`, `404`, `400`). Change `courierId` in the environment if you already used `walk1`.
+
+Alternatively open `http/courier-tracking.http` in VS Code / Cursor (REST Client) or IntelliJ and click **Send** on each request.
+
+### Manual requests (`curl`)
 
 Ataşehir MMM Migros is at `40.9923307, 29.1244229`. Store `id` is a UUID v3 derived from the name (`7149e322-5c08-3471-942d-311309121d39`).
 
